@@ -1,0 +1,8 @@
+const express = require('express');
+const router = express.Router();
+
+router.get('/', (req, res) => {
+    res.json({data: "HEllo Nikka...!"});
+})
+
+module.exports = router;
