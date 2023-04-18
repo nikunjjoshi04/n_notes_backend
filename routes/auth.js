@@ -36,7 +36,7 @@ router.post(
       });
       return res.json(user);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -58,7 +58,7 @@ router.post(
       // check user is exists
       const user = await User.findOne({ email: req.body.email });
       if (!user) {
-        return res.status(404).json({ errors: "User not exists" });
+        return res.status(404).json({ errors: "User not found" });
       }
 
       // compare passwords
@@ -75,7 +75,7 @@ router.post(
       const accessToken = jwt.sign(data, JWT_SECRET);
       res.json({ access_token: accessToken, type: "bearer" });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       res.status(500).json({ error: error.message });
     }
   }
@@ -86,11 +86,11 @@ router.get("/me", fetchUser, async (req, res) => {
     // get user
     const user = await User.findById(req.user.id).select("-password");
     if (!user) {
-      return res.status(404).json({ errors: "User not exists" });
+      return res.status(404).json({ errors: "User not found" });
     }
     res.json(user);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
