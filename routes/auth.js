@@ -2,11 +2,14 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/User");
 const { body, validationResult } = require("express-validator");
+var bcrypt = require("bcryptjs");
+var jwt = require("jsonwebtoken");
+const JWT_SECRET = "nikunjjaykishorjoshi";
 
 router.post(
   "/create-users",
   [
-    body("name", "Enater valid name").isLength({ min: 5 }).trim(),
+    body("name", "Enter valid name").isLength({ min: 5 }).trim(),
     body("email")
       .isEmail()
       .custom(async (value) => {
@@ -22,14 +25,57 @@ router.post(
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
+
+      var salt = await bcrypt.genSalt(10);
+      var hash = await bcrypt.hash(req.body.password, salt);
       user = await User.create({
         name: req.body.name,
         email: req.body.email,
-        password: req.body.password,
+        password: hash,
       });
       return res.json(user);
     } catch (error) {
-      res.status(500).json({ errro: error.message });
+      console.log(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
+router.post(
+  "/login",
+  [
+    body("email").trim().isEmail(),
+    body("password").trim().isLength({ min: 5 }),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+
+      // check user is exists
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        return res.status(404).json({ errors: "User not exists" });
+      }
+
+      // compare passwords
+      const passwordCompare = await bcrypt.compare(
+        req.body.password,
+        user.password
+      );
+      if (!passwordCompare) {
+        return res.status(401).json({ errors: "Unauthorized" });
+      }
+
+      // sign and return jwt token
+      const data = { user: { id: user.id } };
+      const accessToken = jwt.sign(data, JWT_SECRET);
+      res.json({ accessToken: accessToken, type: "bearer" });
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: error.message });
     }
   }
 );
