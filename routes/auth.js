@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require("../models/User");
 const { body, validationResult } = require("express-validator");
 var bcrypt = require("bcryptjs");
+var fetchUser = require("../middleware/auth");
 var jwt = require("jsonwebtoken");
 const JWT_SECRET = "nikunjjaykishorjoshi";
 
@@ -66,18 +67,32 @@ router.post(
         user.password
       );
       if (!passwordCompare) {
-        return res.status(401).json({ errors: "Unauthorized" });
+        return res.status(401).json({ errors: "Enter valid credentials" });
       }
 
       // sign and return jwt token
       const data = { user: { id: user.id } };
       const accessToken = jwt.sign(data, JWT_SECRET);
-      res.json({ accessToken: accessToken, type: "bearer" });
+      res.json({ access_token: accessToken, type: "bearer" });
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: error.message });
     }
   }
 );
+
+router.get("/me", fetchUser, async (req, res) => {
+  try {
+    // get user
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ errors: "User not exists" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
