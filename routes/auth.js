@@ -22,18 +22,23 @@ router.post(
   ],
   async (req, res) => {
     try {
+      // check validation
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
       }
 
+      // hash password
       var salt = await bcrypt.genSalt(10);
       var hash = await bcrypt.hash(req.body.password, salt);
+
+      // create user
       user = await User.create({
         name: req.body.name,
         email: req.body.email,
         password: hash,
       });
+
       return res.json(user);
     } catch (error) {
       console.error(error);
@@ -50,6 +55,7 @@ router.post(
   ],
   async (req, res) => {
     try {
+      // check validation
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
@@ -73,6 +79,7 @@ router.post(
       // sign and return jwt token
       const data = { user: { id: user.id } };
       const accessToken = jwt.sign(data, JWT_SECRET);
+
       res.json({ access_token: accessToken, type: "bearer" });
     } catch (error) {
       console.error(error);
@@ -88,6 +95,7 @@ router.get("/me", fetchUser, async (req, res) => {
     if (!user) {
       return res.status(404).json({ errors: "User not found" });
     }
+    
     res.json(user);
   } catch (error) {
     console.error(error);
