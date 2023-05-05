@@ -42,7 +42,16 @@ router.post(
       return res.json(user);
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+      errors = [
+        {
+          type: "internal server",
+          value: "",
+          msg: error.message,
+          path: "",
+          location: "",
+        },
+      ];
+      res.status(500).json({ errors });
     }
   }
 );
@@ -83,7 +92,16 @@ router.post(
       res.json({ access_token: accessToken, type: "bearer" });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+      errors = [
+        {
+          type: "internal server",
+          value: "",
+          msg: error.message,
+          path: "",
+          location: "",
+        },
+      ];
+      res.status(500).json({ errors });
     }
   }
 );
@@ -95,11 +113,20 @@ router.get("/me", fetchUser, async (req, res) => {
     if (!user) {
       return res.status(404).json({ errors: "User not found" });
     }
-    
+
     res.json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    errors = [
+      {
+        type: "internal server",
+        value: "",
+        msg: error.message,
+        path: "",
+        location: "",
+      },
+    ];
+    res.status(500).json({ errors });
   }
 });
 

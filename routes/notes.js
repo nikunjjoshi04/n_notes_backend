@@ -10,7 +10,16 @@ router.get("/", fetchUser, async (req, res) => {
     res.json({ data: notes });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    errors = [
+      {
+        type: "internal server",
+        value: "",
+        msg: error.message,
+        path: "",
+        location: "",
+      },
+    ];
+    res.status(500).json({ errors });
   }
 });
 
@@ -25,7 +34,16 @@ router.get("/:id", fetchUser, async (req, res) => {
     res.json({ data: note });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    errors = [
+      {
+        type: "internal server",
+        value: "",
+        msg: error.message,
+        path: "",
+        location: "",
+      },
+    ];
+    res.status(500).json({ errors });
   }
 });
 
@@ -68,7 +86,16 @@ router.post(
       res.json({ data: note });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+      errors = [
+        {
+          type: "internal server",
+          value: "",
+          msg: error.message,
+          path: "",
+          location: "",
+        },
+      ];
+      res.status(500).json({ errors });
     }
   }
 );
@@ -91,7 +118,16 @@ router.put(
         _id: req.params.id,
       });
       if (!note) {
-        return res.status(404).json({ errors: "Note not found" });
+        errors = [
+          {
+            type: "object",
+            value: "",
+            msg: "Note not found",
+            path: "",
+            location: "",
+          },
+        ];
+        return res.status(404).json({ errors });
       }
 
       // if title is not null and not same as current note title
@@ -99,12 +135,20 @@ router.put(
       if (title && note.title != title) {
         const notes = await Notes.find({
           user: req.user.id,
-          _id: req.params.id,
+          _id: { $ne: req.params.id },
+          title: title,
         });
         if (notes.length) {
-          return res
-            .status(404)
-            .json({ errors: `Another note is exists with [${title}] title` });
+          errors = [
+            {
+              type: "object",
+              value: "",
+              msg: `Another note is exists with [${title}] title`,
+              path: "",
+              location: "",
+            },
+          ];
+          return res.status(409).json({ errors });
         }
       }
 
@@ -124,7 +168,17 @@ router.put(
       res.json({ data: await Notes.findById(req.params.id) });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: error.message });
+
+      errors = [
+        {
+          type: "internal server",
+          value: "",
+          msg: error.message,
+          path: "",
+          location: "",
+        },
+      ];
+      res.status(500).json({ errors });
     }
   }
 );
@@ -142,7 +196,16 @@ router.delete("/:id", fetchUser, async (req, res) => {
     res.json({ data: note });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: error.message });
+    errors = [
+      {
+        type: "internal server",
+        value: "",
+        msg: error.message,
+        path: "",
+        location: "",
+      },
+    ];
+    res.status(500).json({ errors });
   }
 });
 
